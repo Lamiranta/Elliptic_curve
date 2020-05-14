@@ -7,8 +7,8 @@ using namespace std::chrono;
 
 struct point
 {
-	int x, y;
-	bool inf = false;
+    int x, y;
+    bool inf = false;
 };
 
 /// Weierstrass form of elliptic curve
@@ -31,16 +31,16 @@ int modulo(int num)
 /// Elliptic curve over a finite field
 bool** mapping()
 {
-	bool** field = new bool*[ellcurve.p];
-	for (int i = 0; i < ellcurve.p; ++i)
+    bool** field = new bool*[ellcurve.p];
+    for (int i = 0; i < ellcurve.p; ++i)
+    {
+        field[i] = new bool[ellcurve.p];
+ 	for (int j = 0; j < ellcurve.p; ++j)
 	{
-		field[i] = new bool[ellcurve.p];
-		for (int j = 0; j < ellcurve.p; ++j)
-		{
             field[i][j] = (j * j) % ellcurve.p == modulo(ellcurve.f(i));
-		}
 	}
-	return field;
+    }
+    return field;
 }
 
 /// Image of finite field
@@ -77,7 +77,8 @@ void key_generate(point g, int secret)
     for (unsigned int i = 0; i < secret; ++i)
     {
         /// Doubling a point
-        if (key.x == g.x && key.y == g.y && !key.inf) {
+        if (key.x == g.x && key.y == g.y && !key.inf)
+	{
             m = modulo((3 * (g.x * g.x) + ellcurve.a) * multinv(2 * g.y));
             key.x = m * m - 2 * g.x;
             key.y = m * (g.x - key.x) - g.y;
@@ -86,19 +87,22 @@ void key_generate(point g, int secret)
         /// Point at infinity
         else if (key.x == g.x && !key.inf)
             key.inf = true;
-        else if (key.inf) {
+        else if (key.inf)
+	{
             key = g;
             key.inf = false;
         }
 
         /// Adding points
-        else {
+        else
+	{
             m = modulo((key.y - g.y) * multinv(key.x - g.x));
             key.x = m * m - key.x - g.x;
             key.y = m * (g.x - key.x) - g.y;
         }
 
-        if (!key.inf) {
+        if (!key.inf)
+	{
             key.x = modulo(key.x);
             key.y = modulo(key.y);
             // cout << i + 2 << " * g : (" << key.x << ", " << key.y << ')' << endl;
@@ -125,19 +129,19 @@ int main()
     linear_congruential_engine <unsigned, 4933, 11447, 44249> lce(tt);
     uniform_int_distribution <int> distribution(0, 44249);
 
-	/// Finite field map
-	bool** map = mapping();
+    /// Finite field map
+    bool** map = mapping();
     // finite_field(map);
 
-	/// Generate a key
-	point g{};
-	int secret = distribution(lce) % ellcurve.p;
-	do {
-	    g.x = distribution(lce) % ellcurve.p;
-	    g.y = distribution(lce) % ellcurve.p;
-	} while (!map[g.x][g.y]);
+    /// Generate a key
+    point g{};
+    int secret = distribution(lce) % ellcurve.p;
+    do {
+        g.x = distribution(lce) % ellcurve.p;
+        g.y = distribution(lce) % ellcurve.p;
+    } while (!map[g.x][g.y]);
     cout << "g: " << g.x << ' ' << g.y << endl;
-	key_generate(g, secret);
+    key_generate(g, secret);
 
-	return 0;
+    return 0;
 }
