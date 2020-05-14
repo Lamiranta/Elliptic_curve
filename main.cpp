@@ -1,7 +1,9 @@
 #include <iostream>
 #include <random>
+#include <chrono>
 #include <functional>
 using namespace std;
+using namespace std::chrono;
 
 struct point
 {
@@ -118,9 +120,10 @@ int main()
     system("cls");
 
     /// Random engine
-    default_random_engine rng;
-	uniform_int_distribution <int> dist(1, ellcurve.p);
-	auto num = bind(dist, rng);
+    system_clock::time_point t = system_clock::now();
+    time_t tt = system_clock::to_time_t(t);
+    linear_congruential_engine <unsigned, 4933, 11447, 44249> lce(tt);
+    uniform_int_distribution <int> distribution(0, 44249);
 
 	/// Finite field map
 	bool** map = mapping();
@@ -128,10 +131,10 @@ int main()
 
 	/// Generate a key
 	point g{};
-	int secret = num();
+	int secret = distribution(lce) % ellcurve.p;
 	do {
-		g.x = num();
-		g.y = num();
+	    g.x = distribution(lce) % ellcurve.p;
+	    g.y = distribution(lce) % ellcurve.p;
 	} while (!map[g.x][g.y]);
     cout << "g: " << g.x << ' ' << g.y << endl;
 	key_generate(g, secret);
